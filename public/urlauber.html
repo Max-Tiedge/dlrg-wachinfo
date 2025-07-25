@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>DLRG Wachstatus - Besucheransicht</title>
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: auto;
+      background-color: #f0f8ff;
+      color: #002244;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    select {
+      width: 100%;
+      padding: 0.6rem;
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      border-radius: 5px;
+      border: 1px solid #aaa;
+    }
+
+    .turm {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 1.5rem;
+      border-left: 6px solid #0077cc;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .turm h3 {
+      margin-top: 0;
+    }
+
+    .flaggen {
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .flaggen img {
+      width: 60px;
+      margin: 5px;
+      vertical-align: middle;
+    }
+
+    .status-besetzt {
+      background-color: #4CAF50;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      display: inline-block;
+    }
+
+    .status-nicht-besetzt {
+      background-color: #f44336;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      display: inline-block;
+    }
+
+    #statusAnzeige p {
+      font-size: 1.1rem;
+      margin: 0.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>DLRG Wachstatus - Besucheransicht</h1>
+
+  <label for="wacheSelect">Wache auswählen:</label>
+  <select id="wacheSelect">
+    <option value="">-- Bitte wählen --</option>
+  </select>
+
+  <div id="statusAnzeige"></div>
+
+  <script>
+    let stations = [];
+    const wacheSelect = document.getElementById("wacheSelect");
+    const statusAnzeige = document.getElementById("statusAnzeige");
+
+    fetch('../data/stations.json')
+      .then(res => res.json())
+      .then(data => {
+        stations = data;
+        for (const wache of stations) {
+          const option = document.createElement("option");
+          option.value = wache.id;
+          option.textContent = wache.name;
+          wacheSelect.appendChild(option);
+        }
+      });
+
+    wacheSelect.addEventListener("change", () => {
+      statusAnzeige.innerHTML = "";
+      if (!wacheSelect.value) return;
+
+      const wacheId = wacheSelect.value;
+      const wache = stations.find(s => s.id === wacheId);
+      if (!wache) return;
+
+      const savedDataStr = localStorage.getItem("wachstatus_" + wacheId);
+      if (!savedDataStr) {
+        statusAnzeige.textContent = "Keine aktuellen Daten vorhanden.";
+        return;
+      }
+      const savedData = JSON.parse(savedDataStr);
+
+      const tempP = document.createElement("p");
+      tempP.textContent = `🌊 Wassertemperatur: ${savedData.temperatur} °C`;
+      statusAnzeige.appendChild(tempP);
+
+      if(savedData.bemerkung) {
+        const bemP = document.createElement("p");
+        bemP.textContent = `📝 Bemerkung: ${savedData.bemerkung}`;
+        statusAnzeige.appendChild(bemP);
+      }
+
+      wache.tuerme.forEach(turm => {
+        const div = document.createElement("div");
+        div.className = "turm";
+
+        const turmStatus = savedData.tuerme?.[turm.id];
+        const statusText = turmStatus?.besetzt ? 
+          '<span class="status-besetzt">Besetzt</span>' : 
+          '<span class="status-nicht-besetzt">Nicht besetzt</span>';
+
+        const titel = document.createElement("h3");
+        titel.textContent = turm.name;
+        div.appendChild(titel);
+
+        const statusSpan = document.createElement("div");
+        statusSpan.innerHTML = "Status: " + statusText;
+        div.appendChild(statusSpan);
+
+ if (turmStatus?.besetzt) {
+  const flagsDiv = document.createElement("div");
+  flagsDiv.className = "flaggen";
+
+  let anzeigeFlagge = "DLRG"; // Standard, wenn keine andere
+
+  if (turmStatus.flags && turmStatus.flags.length > 0) {
+    const andere = turmStatus.flags.find(f => f !== "DLRG");
+    if (andere) {
+      anzeigeFlagge = andere;
+    }
+  }
+
+  const img = document.createElement("img");
+  img.alt = anzeigeFlagge + " Flagge";
+  switch(anzeigeFlagge) {
+    case "DLRG":
+      img.src = "../img/dlrg.png";
+      break;
+    case "Gelb":
+      img.src = "../img/gelb.png";
+      break;
+    case "Rot":
+      img.src = "../img/rot.png";
+      break;
+    case "Windsack":
+      img.src = "../img/windsack.png";
+      break;
+    default:
+      img.src = "";
+  }
+
+  flagsDiv.appendChild(img);
+  div.appendChild(flagsDiv);
+
+  // Zusatzinformationen
+  const zusatzInfo = document.createElement("div");
+  zusatzInfo.style.marginTop = "10px";
+
+  if (turmStatus.raucher) {
+    const raucherP = document.createElement("p");
+    raucherP.textContent = "🚬 Raucherstrand";
+    zusatzInfo.appendChild(raucherP);
+  }
+
+  if (turmStatus.hund) {
+    const hundP = document.createElement("p");
+    hundP.textContent = "🐕 Hundestrand";
+    zusatzInfo.appendChild(hundP);
+  }
+
+  if (turmStatus.kinder) {
+    const kinderP = document.createElement("p");
+    kinderP.textContent = "👶 Für Kinder geeignet";
+    zusatzInfo.appendChild(kinderP);
+  }
+
+  if (turmStatus.zoning) {
+    const zoningContainer = document.createElement("div");
+    zoningContainer.style.display = "flex";
+    zoningContainer.style.flexDirection = "column";
+    zoningContainer.style.alignItems = "center";
+    zoningContainer.style.marginTop = "10px";
+
+    const zoningImg = document.createElement("img");
+    zoningImg.src = "zoning.png";
+    zoningImg.alt = "Zoning";
+    zoningImg.style.height = "80px";
+    zoningImg.style.objectFit = "contain";
+
+    const zoningText = document.createElement("p");
+    zoningText.textContent = "Dieser Bereich gilt als bewachter Badestrand";
+    zoningText.style.textAlign = "center";
+
+    const zoningDist = document.createElement("p");
+    zoningDist.textContent = `Überwachte Distanz: ${turmStatus.zoning} m`;
+    zoningDist.style.fontSize = "0.9em";
+
+    zoningContainer.appendChild(zoningImg);
+    zoningContainer.appendChild(zoningText);
+    zoningContainer.appendChild(zoningDist);
+
+    zusatzInfo.appendChild(zoningContainer);
+  }
+
+  if (turmStatus.bemerkung) {
+    const bemerkungP = document.createElement("p");
+    bemerkungP.textContent = `🗒️ Bemerkung: ${turmStatus.bemerkung}`;
+    zusatzInfo.appendChild(bemerkungP);
+  }
+
+  // ⏱️ Neue Zeile: Letzte Aktualisierung
+  if (turmStatus.lastUpdate) {
+    const updateInfo = document.createElement("p");
+    const datum = new Date(turmStatus.lastUpdate);
+    updateInfo.textContent = `⏱️ Letzte Aktualisierung: ${datum.toLocaleString("de-DE")}`;
+    updateInfo.style.fontSize = "0.8em";
+    updateInfo.style.color = "#555";
+    zusatzInfo.appendChild(updateInfo);
+  }
+
+  div.appendChild(zusatzInfo);
+
+;
+
+        }
+
+        statusAnzeige.appendChild(div);
+      });
+    });
+  </script>
+</body>
+</html>

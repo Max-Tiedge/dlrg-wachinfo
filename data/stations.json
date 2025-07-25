@@ -1,0 +1,30 @@
+[
+  {
+    "id": "wyk",
+    "name": "Wache Wyk auf Föhr",
+    "tuerme": [
+      { "id": "turm1", "name": "Turm 1" },
+      { "id": "turm2", "name": "(Turm 2) - Hauptturm" },
+      { "id": "turm3", "name": "Turm 3" },
+      { "id": "turm4", "name": "Turm 4" },
+      { "id": "turm5", "name": "Turm 5" },
+      { "id": "turm6", "name": "Turm 6" }
+    ]
+  },
+  {
+    "id": "nieblum",
+    "name": "Wache Nieblum auf Föhr",
+    "tuerme": [
+      { "id": "turm1", "name": "Turm 1" }
+    ]
+  },
+  {
+    "id": "goöhren",
+    "name": "Ostseebad Göhren",
+    "tuerme": [
+      { "id": "turm1", "name": "Turm 1" },
+      { "id": "turm2", "name": "Turm 2" },
+      { "id": "turm3", "name": "Turm 3" }
+    ]
+      }
+]

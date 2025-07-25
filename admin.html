@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin-Panel</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <h1>Admin-Login</h1>
+  <div id="loginSection">
+    <input type="text" id="adminUser" placeholder="Benutzername" />
+    <input type="password" id="adminPass" placeholder="Passwort" />
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div id="adminPanel" style="display:none;">
+    <h2>Benutzerverwaltung</h2>
+    <input type="text" id="newUser" placeholder="Neuer Benutzername" />
+    <input type="password" id="newPass" placeholder="Neues Passwort" />
+    <select id="newRole">
+      <option value="wachleiter">Wachleiter</option>
+      <option value="admin">Admin</option>
+    </select>
+    <button onclick="addUser()">Benutzer hinzufügen</button>
+
+    <h3>Benutzerliste</h3>
+    <ul id="userList"></ul>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
